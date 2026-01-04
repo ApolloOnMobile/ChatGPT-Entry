@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Growing Circle Collision Animation</title>
+<style>
+    body {
+        margin: 0;
+        background: #0e0e0e;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+    canvas {
+        background: #111;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="600" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const CENTER = { x: canvas.width / 2, y: canvas.height / 2 };
+const BIG_RADIUS = 250;
+
+let smallCircle = {
+    x: CENTER.x + 100,
+    y: CENTER.y,
+    radius: 12,
+    vx: 3.2,
+    vy: 2.1,
+    growth: 0.8
+};
+
+function drawBigCircle() {
+    ctx.beginPath();
+    ctx.arc(CENTER.x, CENTER.y, BIG_RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = "#00bcd4";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+function drawSmallCircle() {
+    ctx.beginPath();
+    ctx.arc(smallCircle.x, smallCircle.y, smallCircle.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "#ff9800";
+    ctx.fill();
+}
+
+function update() {
+    smallCircle.x += smallCircle.vx;
+    smallCircle.y += smallCircle.vy;
+
+    // Distance from center
+    const dx = smallCircle.x - CENTER.x;
+    const dy = smallCircle.y - CENTER.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Collision with big circle
+    if (distance + smallCircle.radius >= BIG_RADIUS) {
+
+        // Normal vector
+        const nx = dx / distance;
+        const ny = dy / distance;
+
+        // Reflect velocity
+        const dot = smallCircle.vx * nx + smallCircle.vy * ny;
+        smallCircle.vx -= 2 * dot * nx;
+        smallCircle.vy -= 2 * dot * ny;
+
+        // Push inside boundary
+        smallCircle.x = CENTER.x + nx * (BIG_RADIUS - smallCircle.radius);
+        smallCircle.y = CENTER.y + ny * (BIG_RADIUS - smallCircle.radius);
+
+        // Grow slightly
+        smallCircle.radius += smallCircle.growth;
+    }
+}
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawBigCircle();
+    drawSmallCircle();
+    update();
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
